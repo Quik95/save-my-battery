@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -10,8 +11,17 @@ import (
 	"github.com/gen2brain/beeep"
 )
 
+var (
+	threshold int
+)
+
+func init() {
+	flag.IntVar(&threshold, "threshold", 60, "Specify charging threshold after which notification will be shown")
+}
+
 func main() {
-	const threshold int = 10
+	flag.Parse()
+
 	// Flag to specify if we have already shown the notification
 	// so we won't be bombarding user with notifications
 	notificationShown := false
