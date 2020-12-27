@@ -14,11 +14,13 @@ import (
 var (
 	threshold    int
 	irritateMode bool
+	updateRate   int
 )
 
 func init() {
 	flag.IntVar(&threshold, "threshold", 60, "Specify charging threshold after which notification will be shown")
 	flag.BoolVar(&irritateMode, "irritate", false, "Irritate mode sends notification on every update")
+	flag.IntVar(&updateRate, "rate", 30, "Specify how often battery level should be checked. Value should be in seconds")
 }
 
 func main() {
@@ -49,7 +51,7 @@ func main() {
 				notificationShown = false
 			}
 		}
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * time.Duration(updateRate))
 	}
 }
 
