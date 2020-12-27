@@ -12,11 +12,13 @@ import (
 )
 
 var (
-	threshold int
+	threshold    int
+	irritateMode bool
 )
 
 func init() {
 	flag.IntVar(&threshold, "threshold", 60, "Specify charging threshold after which notification will be shown")
+	flag.BoolVar(&irritateMode, "irritate", false, "Irritate mode sends notification on every update")
 }
 
 func main() {
@@ -53,7 +55,10 @@ func main() {
 
 // checkNotification abstracts logic for showing notification
 func checkNotification(bat *battery.Battery, level int, shown bool, threshold int) bool {
-	if bat.State == battery.Charging && level > threshold && !shown {
+	baseCase := bat.State == battery.Charging && level > threshold
+	if baseCase && irritateMode {
+		return true
+	} else if baseCase && !shown {
 		return true
 	}
 	return false
