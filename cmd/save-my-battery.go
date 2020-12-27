@@ -19,8 +19,8 @@ func main() {
 	const threshold int = 10
 
 	for {
-		for _, battery := range batteries {
-			level := int(math.Floor(battery.Current / battery.Full * 100))
+		for _, bat := range batteries {
+			level := int(math.Floor(bat.Current / bat.Full * 100))
 			if level > threshold {
 				message := fmt.Sprintf(
 					"Your battery is charged in %d%%, which exceeds threshold of %d%%. Please consider disconnecting the charger to save battery life.",
