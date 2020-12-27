@@ -11,20 +11,20 @@ import (
 )
 
 func main() {
-	batteries, err := battery.GetAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	const threshold int = 10
 	// Flag to specify if we have already shown the notification
 	// so we won't be bombarding user with notifications
 	notificationShown := false
 
 	for {
+		batteries, err := battery.GetAll()
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		for _, bat := range batteries {
 			level := int(math.Floor(bat.Current / bat.Full * 100))
-			if level > threshold && bat.State == battery.Charging && !notificationShown {
+			if checkNotification(bat, level, notificationShown, threshold) {
 				message := fmt.Sprintf(
 					"Your battery is charged in %d%%, which exceeds threshold of %d%%. Please consider disconnecting the charger to save battery life.",
 					level, threshold)
@@ -33,9 +33,18 @@ func main() {
 				}
 				notificationShown = true
 			} else if bat.State != battery.Charging {
+				// when battery state changes reset notification
 				notificationShown = false
 			}
 		}
 		time.Sleep(time.Second * 5)
 	}
+}
+
+// checkNotification abstracts logic for showing notification
+func checkNotification(bat *battery.Battery, level int, shown bool, threshold int) bool {
+	if bat.State == battery.Charging && level > threshold && !shown {
+		return true
+	}
+	return false
 }
