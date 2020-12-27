@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
+	"strconv"
 
 	"github.com/distatus/battery"
+	"github.com/gen2brain/beeep"
 )
 
 func main() {
@@ -14,6 +17,12 @@ func main() {
 	}
 
 	for i, battery := range batteries {
-		fmt.Printf("Battery number: %d, charge level: %v", i, battery.Current/battery.Full*100)
+		levelFloat := math.Floor(battery.Current / battery.Full * 100)
+		levelString := strconv.Itoa(int(levelFloat))
+		fmt.Printf("Battery number: %d, charge level: %v", i, levelString)
+		if err := beeep.Alert("Battery Level", levelString, ""); err != nil {
+			log.Fatal(err)
+		}
 	}
+
 }
