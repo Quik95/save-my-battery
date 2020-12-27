@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
-	"strconv"
 	"time"
 
 	"github.com/distatus/battery"
@@ -16,12 +16,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	const threshold int = 10
+
 	for {
 		for _, battery := range batteries {
-			levelFloat := math.Floor(battery.Current / battery.Full * 100)
-			levelString := strconv.Itoa(int(levelFloat))
-			if err := beeep.Alert("Battery Level", levelString, ""); err != nil {
-				log.Fatal(err)
+			level := int(math.Floor(battery.Current / battery.Full * 100))
+			if level > threshold {
+				message := fmt.Sprintf(
+					"Your battery is charged in %d%%, which exceeds threshold of %d%%. Please consider disconnecting the charger to save battery life.",
+					level, threshold)
+				if err := beeep.Alert("Battery is overcharged", message, ""); err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 		time.Sleep(time.Second * 5)
