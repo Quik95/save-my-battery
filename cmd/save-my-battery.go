@@ -7,8 +7,8 @@ import (
 	"math"
 	"time"
 
+	notify "github.com/TheCreeper/go-notify"
 	"github.com/distatus/battery"
-	"github.com/gen2brain/beeep"
 )
 
 var (
@@ -39,12 +39,8 @@ func main() {
 		for _, bat := range batteries {
 			level := int(math.Floor(bat.Current / bat.Full * 100))
 			if checkNotification(bat, level, notificationShown, threshold) {
-				message := fmt.Sprintf(
-					"Your battery is charged in %d%%, which exceeds threshold of %d%%. Please consider disconnecting the charger to save battery life.",
-					level, threshold)
-				if err := beeep.Alert("Battery is overcharged", message, ""); err != nil {
-					log.Fatal(err)
-				}
+				showNotification(threshold, level, notify.UrgencyCritical)
+
 				notificationShown = true
 			} else if bat.State != battery.Charging {
 				// when battery state changes reset notification
@@ -53,6 +49,22 @@ func main() {
 		}
 		time.Sleep(time.Second * time.Duration(updateRate))
 	}
+}
+
+func showNotification(threshold, currentLevel int, urgencyLevel byte) error {
+	message := fmt.Sprintf(
+		"Your battery is charged in %d%%, which exceeds threshold of %d%%. Please consider disconnecting the charger to save battery life.",
+		currentLevel, threshold)
+	ntf := notify.NewNotification("The battery is overcharged", message)
+	ntf.Timeout = notify.ExpiresNever
+	ntf.AppIcon = "battery"
+	ntf.Hints = make(map[string]interface{})
+	ntf.Hints[notify.HintUrgency] = notify.UrgencyCritical
+
+	if _, err := ntf.Show(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // checkNotification abstracts logic for showing notification
