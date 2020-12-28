@@ -15,16 +15,31 @@ var (
 	threshold    int
 	irritateMode bool
 	updateRate   int
+	urgencyLevel int
 )
 
 func init() {
 	flag.IntVar(&threshold, "threshold", 60, "Specify charging threshold after which notification will be shown")
 	flag.BoolVar(&irritateMode, "irritate", false, "Irritate mode sends notification on every update")
 	flag.IntVar(&updateRate, "rate", 30, "Specify how often battery level should be checked. Value should be in seconds")
+	flag.IntVar(&urgencyLevel, "urgency", 2, "Specify notification urgency level. 0 for Low, 1 for Normal and 2 for Urgent")
 }
 
 func main() {
 	flag.Parse()
+
+	// match urgencyLevel to notify enums
+	var urgency byte
+	switch urgencyLevel {
+	case int(notify.UrgencyLow):
+		urgency = notify.UrgencyLow
+	case int(notify.UrgencyNormal):
+		urgency = notify.UrgencyNormal
+	case int(notify.UrgencyCritical):
+		urgency = notify.UrgencyCritical
+	default:
+		log.Fatalf("%d is not a valid urgency setting.", urgencyLevel)
+	}
 
 	// Flag to specify if we have already shown the notification
 	// so we won't be bombarding user with notifications
@@ -39,7 +54,7 @@ func main() {
 		for _, bat := range batteries {
 			level := int(math.Floor(bat.Current / bat.Full * 100))
 			if checkNotification(bat, level, notificationShown, threshold) {
-				showNotification(threshold, level, notify.UrgencyCritical)
+				showNotification(threshold, level, urgency)
 
 				notificationShown = true
 			} else if bat.State != battery.Charging {
